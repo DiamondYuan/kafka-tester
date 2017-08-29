@@ -5,7 +5,6 @@ import (
 	"strings"
 	"github.com/Shopify/sarama"
 	"os"
-	"log"
 	"time"
 )
 
