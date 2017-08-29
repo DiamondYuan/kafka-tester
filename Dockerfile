@@ -3,11 +3,11 @@ MAINTAINER FandiYuan  <georgeyuan@diamondyuan.com>
 
 RUN go get github.com/Shopify/sarama
 
-ADD main.go /kafka-test-temp/
+ADD main.go /kafka-testr-temp/
 
-RUN cd /kafka-test-temp && \
+RUN cd /kafka-testr-temp && \
 	go build && \
-	mv kafka-test-temp /kafka-test && \
-	rm -rf /kafka-test-temp
+	mv kafka-testr-temp /kafka-testr && \
+	rm -rf /kafka-testr-temp
 
-CMD ["/kafka-test"]
+CMD ["/kafka-testr"]
