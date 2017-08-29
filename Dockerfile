@@ -1,7 +1,8 @@
 FROM golang
 MAINTAINER FandiYuan  <georgeyuan@diamondyuan.com>
 
-RUN go get github.com/Shopify/sarama
+RUN go get github.com/Shopify/sarama && \
+	go get github.com/bsm/sarama-cluster
 
 ADD main.go /kafka-testr-temp/
 
