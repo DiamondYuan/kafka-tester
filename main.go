@@ -1,11 +1,11 @@
 package main
 
 import (
-"fmt"
-"strings"
-"github.com/Shopify/sarama"
-"os"
-"log"
+	"fmt"
+	"strings"
+	"github.com/Shopify/sarama"
+	"os"
+	"log"
 	"time"
 )
 
@@ -16,27 +16,25 @@ func main() {
 	address := os.Getenv("KAFKA_ADDRESS")
 	topic = os.Getenv("KAFKA_TOPIC")
 	if topic == "" || address == "" {
-		log.Fatalf("缺少kafka配置")
+		fmt.Printf("缺少kafka配置")
 	}
 	config := sarama.NewConfig()
 	config.Producer.Return.Successes = true
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	p, err := sarama.NewAsyncProducer(strings.Split(address, ","), config)
 	if err != nil {
-		log.Printf("kafka producer创建失败 address:%s  topic:%s", address, topic)
-		log.Fatalf("kafka连接失败")
+		fmt.Printf("kafka producer创建失败 address:%s  topic:%s", address, topic)
 	} else {
-		log.Printf("kafka producer创建成功 address:%s  topic:%s", address, topic)
+		fmt.Printf("kafka producer创建成功 address:%s  topic:%s", address, topic)
 	}
 	asyncProducer = &p
 	for {
 		time.Sleep(time.Second)
-		log.Printf(time.Unix(time.Now().Unix(), 0).String())
+		fmt.Printf(time.Unix(time.Now().Unix(), 0).String())
 		sendMessage(time.Unix(time.Now().Unix(), 0).String())
 	}
 
 }
-
 
 func sendMessage(message string) {
 	if asyncProducer == nil {
@@ -60,4 +58,3 @@ func sendMessage(message string) {
 	}(p)
 	p.Input() <- msg
 }
-
