@@ -11,4 +11,4 @@ RUN cd /kafka-testr-temp && \
 	mv kafka-testr-temp /kafka-testr && \
 	rm -rf /kafka-testr-temp
 
-CMD ["/kafka-testr"]
+ENTRYPOINT ["/kafka-testr"]
