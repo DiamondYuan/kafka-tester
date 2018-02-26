@@ -1,4 +1,4 @@
-FROM golang:1.8 as build
+FROM golang as build
 
 COPY . /go/src/github.com/DiamondYuan/kafka-tester
 
@@ -12,8 +12,8 @@ RUN cd /go/src/github.com/DiamondYuan/kafka-tester && \
 
 FROM alpine
 
-COPY --from=build /go/src/github.com/DiamondYuan/kafka-tester/kafka-tester /
+COPY --from=build /go/src/github.com/DiamondYuan/kafka-tester/kafka-tester /usr/bin/
 
 WORKDIR /
 
-ENTRYPOINT ["/kafka-testr"]
+ENTRYPOINT ["kafka-tester"]
