@@ -1,14 +1,19 @@
-FROM golang
-MAINTAINER FandiYuan  <georgeyuan@diamondyuan.com>
+FROM golang:1.8 as build
 
-RUN go get github.com/Shopify/sarama && \
-	go get github.com/bsm/sarama-cluster
+COPY . /go/src/github.com/DiamondYuan/kafka-tester
 
-ADD main.go /kafka-testr-temp/
+ENV CGO_ENABLED=0
 
-RUN cd /kafka-testr-temp && \
-	go build && \
-	mv kafka-testr-temp /kafka-testr && \
-	rm -rf /kafka-testr-temp
+RUN curl https://glide.sh/get | sh
+
+RUN cd /go/src/github.com/DiamondYuan/kafka-tester && \
+    glide install && \
+	go build
+
+FROM alpine
+
+COPY --from=build /go/src/github.com/DiamondYuan/kafka-tester/kafka-tester /
+
+WORKDIR /
 
 ENTRYPOINT ["/kafka-testr"]
