@@ -7,24 +7,40 @@ import (
 	"github.com/bsm/sarama-cluster"
 	"time"
 	"strings"
+	"fmt"
 )
 
 const (
 	defaultKafkaAddress = "localhost:9092"
 	defaultTopic        = "test"
 	defaultGroup        = "kafka-tester"
+	defaultMode         = "all"
 )
 
 var address string
 var topic string
 var group string
+var mode string
+var messageIndex int
 
 var asyncProducer *sarama.AsyncProducer
 var consumer *cluster.Consumer
 
 func main() {
-	go sentTestMessage()
-	consumeTestMessage()
+	messageIndex = 0;
+	switch mode {
+	case "consumer":
+		log.Println("Start consumer")
+		consumeTestMessage()
+	case "producer":
+		log.Println("Start producer")
+		go sentTestMessage()
+
+	default:
+		log.Println("Start producer and consumer")
+		go sentTestMessage()
+		consumeTestMessage()
+	}
 	for {
 
 	}
@@ -34,10 +50,12 @@ func init() {
 	flag.StringVar(&address, "address", defaultKafkaAddress, "Address of kafka")
 	flag.StringVar(&topic, "topic", defaultTopic, "Topic of kafka")
 	flag.StringVar(&group, "group", defaultGroup, "Group of kafka Consumer")
+	flag.StringVar(&mode, "mode", defaultMode, "kafka tester mode producer or consumer")
 	flag.Parse()
 	log.Println("kafka address: ", address)
 	log.Println("kafka topic: ", topic)
 	log.Println("kafka group: ", group)
+	log.Println("kafka tester mode: ", group)
 	{
 		err := initConsumer()
 		if err != nil {
@@ -89,9 +107,12 @@ func consumeTestMessage() {
 			}
 		}
 	}(consumer)
-	for msg := range consumer.Messages() {
-		log.Println("Reveive message success " + string(msg.Value))
-		consumer.MarkOffset(msg, "")
+	for {
+		select {
+		case message := <-consumer.Messages():
+			log.Printf("Reveive message success %s offset:%d partition:%d", string(message.Value), message.Offset, message.Partition)
+			consumer.MarkOffset(message, "")
+		}
 	}
 }
 
@@ -105,7 +126,7 @@ func sentTestMessage() {
 				}
 			case msg := <-p.Successes():
 				messageByte, _ := msg.Value.Encode()
-				log.Println("Send message success" + string(messageByte))
+				log.Printf("Send message success %s offset:%d partition:%d", string(messageByte), msg.Offset, msg.Partition)
 			}
 		}
 	}(*asyncProducer)
@@ -119,6 +140,8 @@ func sendMessage(message string) {
 	if asyncProducer == nil {
 		log.Fatal("asyncProducer is nil")
 	}
+	message = fmt.Sprintf("%d   %s", messageIndex, message)
+	messageIndex++
 	msg := &sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.ByteEncoder(message),
